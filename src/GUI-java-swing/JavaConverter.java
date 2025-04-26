@@ -1,3 +1,5 @@
+import App.ConvertFile;
+
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.DocumentEvent;
@@ -534,7 +536,7 @@ public class JavaConverter extends JFrame {
             @Override
             protected Boolean doInBackground() {
                 // Call the FileConverter to do the actual conversion
-                return FileConverter.convertFile(inputPath, outputPath);
+                return ConvertFile.converFileThread(inputPath, outputPath);
             }
 
             @Override

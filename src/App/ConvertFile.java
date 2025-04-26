@@ -1,14 +1,25 @@
 package App;
 
 import java.io.File;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static App_Constants.Constants.*;
 import static Utils.Tool.*;
 
 public class ConvertFile {
+    public final static ReentrantLock lock = new ReentrantLock();
+
+    public static boolean converFileThread(String input_file, String output_file) {
+        AtomicBoolean B = new AtomicBoolean(false);
+        Thread thread = new Thread(() -> {
+           B.set(convertFile(input_file, output_file));
+        });
+        thread.start();
+        return B.get();
+    }
+
     public static boolean convertFile(String input_file, String output_file) {
-
-
         String input_extension = input_file.substring(input_file.lastIndexOf('.') + 1).toLowerCase();
         String output_extension = output_file.substring(output_file.lastIndexOf('.') + 1).toLowerCase();
 
@@ -28,11 +39,16 @@ public class ConvertFile {
                 command = String.format("\"%s\" \"%s\" \"%s\"", image_magick_path, input_file, output_file);
             } else if (officeFormats.contains(input_extension) || officeFormats.contains(output_extension)) {
                 if (!officeFormats.contains(input_extension)) {
-                    command(String.format("\"%s\" -s \"%s\" -o \"%s\"", pandoc_path, input_file, temp));
-                    check = true;
+                    lock.lock();
+                    try {
+                        command(String.format("\"%s\" -s \"%s\" -o \"%s\"", pandoc_path, input_file, temp));
+                        check = true;
+                    } finally {
+                        lock.unlock();
+                    }
                 }
-                    command = String.format("%s --headless --convert-to %s \"%s\" --outdir \"%s\"",
-                            libre_office_path, output_extension, check ? temp : input_file, output_path);
+                command = String.format("%s --headless --convert-to %s \"%s\" --outdir \"%s\"",
+                        libre_office_path, output_extension, check ? temp : input_file, output_path);
 
             } else {
                 command = String.format("\"%s\" -s \"%s\" -o \"%s\"", pandoc_path, input_file, output_file);
@@ -45,9 +61,17 @@ public class ConvertFile {
             e.printStackTrace();
             return false;
         } finally {
-            if (check && new File(temp).exists())
-                new File(temp).delete();
+            if (check) {
+                lock.lock();
+                try {
+                    File tempFile = new File(temp);
+                    if (tempFile.exists()) {
+                        tempFile.delete();
+                    }
+                } finally {
+                    lock.unlock();
+                }
+            }
         }
-
     }
 }
