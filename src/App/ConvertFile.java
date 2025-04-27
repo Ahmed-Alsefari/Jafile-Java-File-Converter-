@@ -13,9 +13,17 @@ public class ConvertFile {
     public static boolean converFileThread(String input_file, String output_file) {
         AtomicBoolean B = new AtomicBoolean(false);
         Thread thread = new Thread(() -> {
-           B.set(convertFile(input_file, output_file));
+            B.set(convertFile(input_file, output_file));
         });
         thread.start();
+
+        try {
+            thread.join();
+        } catch (InterruptedException e) {
+            System.err.println("Thread interrupted: " + e.getMessage());
+            return false;
+        }
+
         return B.get();
     }
 
@@ -28,7 +36,7 @@ public class ConvertFile {
         String temp = output_path + File.separator + file_name + ".docx";
 
         boolean check = false;
-
+        lock.lock();
         try {
             String command = "";
 
@@ -39,13 +47,8 @@ public class ConvertFile {
                 command = String.format("\"%s\" \"%s\" \"%s\"", image_magick_path, input_file, output_file);
             } else if (officeFormats.contains(input_extension) || officeFormats.contains(output_extension)) {
                 if (!officeFormats.contains(input_extension)) {
-                    lock.lock();
-                    try {
-                        command(String.format("\"%s\" -s \"%s\" -o \"%s\"", pandoc_path, input_file, temp));
-                        check = true;
-                    } finally {
-                        lock.unlock();
-                    }
+                    command(String.format("\"%s\" -s \"%s\" -o \"%s\"", pandoc_path, input_file, temp));
+                    check = true;
                 }
                 command = String.format("%s --headless --convert-to %s \"%s\" --outdir \"%s\"",
                         libre_office_path, output_extension, check ? temp : input_file, output_path);
@@ -56,22 +59,16 @@ public class ConvertFile {
             command(command);
             System.out.println("Conversion completed successfully");
             return true;
-        } catch (Exception e) {
+        } catch (
+                Exception e) {
             System.out.println("Error during conversion: " + e.getMessage());
             e.printStackTrace();
             return false;
         } finally {
-            if (check) {
-                lock.lock();
-                try {
-                    File tempFile = new File(temp);
-                    if (tempFile.exists()) {
-                        tempFile.delete();
-                    }
-                } finally {
-                    lock.unlock();
-                }
-            }
+            if (check && new File(temp).exists())
+                new File(temp).delete();
+            lock.unlock();
         }
     }
 }
+
