@@ -42,7 +42,7 @@ public class ConvertFile {
 
             if (audioFormats.contains(input_extension) || audioFormats.contains(output_extension) ||
                     videoFormats.contains(input_extension) || videoFormats.contains(output_extension)) {
-                command = String.format("%s -i \"%s\" \"%s\"", ffmpeg_path, input_file, output_file);
+                command = String.format("%s -i \"%s\" -preset fast -threads %d \"%s\"", ffmpeg_path, input_file, Runtime.getRuntime().availableProcessors(), output_file);
             } else if (imageFormats.contains(input_extension) || imageFormats.contains(output_extension)) {
                 command = String.format("\"%s\" \"%s\" \"%s\"", image_magick_path, input_file, output_file);
             } else if (officeFormats.contains(input_extension) || officeFormats.contains(output_extension)) {
