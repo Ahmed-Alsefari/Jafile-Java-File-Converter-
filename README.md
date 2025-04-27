@@ -5,8 +5,8 @@ This project was developed using **Java** along with **Swing** to create a simpl
 
 ---
 
-## Description
-The **Java File Converter** is a versatile tool designed to easily transform files between a wide range of formats.  
+## 📝 Description
+The **Jafile(Java File Converter)** is a versatile tool designed to easily transform files between a wide range of formats.  
 It provides a user-friendly interface that supports the conversion of:
 
 - 📄 **Document Formats:**  
@@ -43,8 +43,8 @@ To ensure proper file conversion across various formats, the application uses th
 
 ### 📦 Included Tools
 
-All required tools are already packaged inside the project under the `tools/` directory.  
-When you run the application for the first time, the program automatically detects and configures these tools without requiring any additional installation or setup.
+ All required tools are already packaged inside the project under the `tools/` directory.  
+ When you run the application for the first time, the program automatically detects and configures these tools without requiring any additional installation or setup.
 
 ---
 
