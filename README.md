@@ -48,6 +48,27 @@ To ensure proper file conversion across various formats, the application uses th
 
 ---
 
+## Installation
+
+*Follow these simple steps to set up the project:*
+
+1. **Choose a folder** where you want to clone the project.
+
+2. **Clone the repository**
+    ```bash
+    git clone https://github.com/Ahmed-Alsefari/Jafile-Java-File-Converter-.git
+    ```
+
+3. **Open the project** using **IntelliJ IDEA** or any Java-supported IDE.
+
+4. **Make sure Java is installed**
+    ```bash
+    java -version
+    ```
+    > Java 17 or higher is recommended.
+
+---
+
 ## 👥 Team Members
 
 | Name               |
