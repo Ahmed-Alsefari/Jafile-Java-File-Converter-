@@ -7,14 +7,16 @@ import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.dnd.*;
-import java.awt.event.*;
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public class JavaConverter extends JFrame {
+    // --- MAIN COMPONENTS AND FIELDS ---
     private JButton targetButton, destinationButton, showFormatsButton, convertButton;
     private JLabel pathTargetLabel, pathDestinationLabel;
     private JPanel dropPanel, mainPanel;
@@ -27,24 +29,32 @@ public class JavaConverter extends JFrame {
     private ButtonGroup formatButtonGroup;
     private JPanel radioButtonPanel;
 
+    ImageIcon logo = new ImageIcon("logo.png");
+
     // Set of valid formats for validation
     private final Set<String> validFormats = new HashSet<>(Arrays.asList(
             // Document formats
-            "pdf", "doc", "docx", "odt", "fodt", "rtf", "txt", "xml",
-            // E-book formats
-            "epub", "fb2",
-            // Spreadsheet formats
-            "xls", "xlsx", "ods", "csv",
+            "pdf", "doc", "docx", "odt", "fodt", "rtf", "txt", "xml", "latex", "bibtex",
+            "biblatex", "commonmark", "creole", "djot", "docbook", "dokuwiki", "haddock", "jats",
+            "jira", "man", "mdoc", "muse", "opml", "org", "pod", "rst", "markdown", "asciidoc",
+            "context", "texinfo", "textile", "tikiwiki", "twiki", "typst", "vimwiki", "tei", "t2t",
+            "icml", "markua", "xwiki", "zimwiki", "md",
             // Image formats
             "jpg", "jpeg", "png", "bmp", "gif", "tiff", "webp", "heic", "avif",
             // Audio formats
             "mp3", "wav", "ogg", "flac", "aac", "m4a", "wma", "alac", "opus", "amr", "aiff",
             // Video formats
             "mp4", "mkv", "avi", "mov", "flv", "wmv", "webm", "mpeg", "3gp", "ts", "m4v",
+            // E-book formats
+            "epub", "fb2",
+            // Spreadsheet formats
+            "xls", "xlsx", "ods", "csv", "tsv",
             // Other formats
-            "json", "html", "latex", "markdown"
+            "json", "html", "ipynb", "native", "csljson", "ris", "endnotexml", "gfm", "opendocument",
+            "plain", "pptx", "slideous", "slidy", "dzslides", "revealjs", "s5", "beamer"
     ));
 
+    // --- CONSTRUCTOR AND INITIALIZATION ---
     public JavaConverter() {
         // Enable full Unicode support
         System.setProperty("file.encoding", "UTF-8");
@@ -59,6 +69,10 @@ public class JavaConverter extends JFrame {
         mainPanel = new JPanel(new BorderLayout(10, 10));
         mainPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
         mainPanel.setBackground(new Color(245, 245, 245));
+
+        //set icon logo
+        setIconImage(logo.getImage());
+        setVisible(true);
 
         // Set layout for main components
         JPanel centerPanel = new JPanel(new BorderLayout(10, 10));
@@ -79,9 +93,26 @@ public class JavaConverter extends JFrame {
         centerPanel.add(manualPanel, BorderLayout.CENTER);
     }
 
+    private void configureFrame() {
+        setTitle("JaFile");
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setSize(600, 700); // Slightly taller to accommodate the new radio buttons
+        setLocationRelativeTo(null);
+        setContentPane(mainPanel);
+        setVisible(true);
+    }
+
+    private void setupListeners() {
+        targetButton.addActionListener(e -> selectSourceFile());
+        destinationButton.addActionListener(e -> selectDestinationFile());
+        showFormatsButton.addActionListener(e -> showAllFormats());
+        convertButton.addActionListener(e -> convertFile());
+    }
+
+    // --- UI CREATION METHODS ---
     private JPanel createHeaderPanel() {
-        JLabel title = new JLabel("File Converter Pro", SwingConstants.CENTER);
-        title.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        JLabel title = new JLabel(" [ Java File Converter ] ", SwingConstants.CENTER);
+        title.setFont(new Font("Segoe UI", Font.BOLD, 30));
         title.setForeground(new Color(70, 130, 180));
         title.setBorder(new EmptyBorder(0, 0, 20, 0));
         JPanel p = new JPanel(new BorderLayout());
@@ -108,6 +139,7 @@ public class JavaConverter extends JFrame {
         return panel;
     }
 
+    // In the createManualSelectionPanel() method, ensure the buttons have visible text:
     private JPanel createManualSelectionPanel() {
         JPanel manual = new JPanel();
         manual.setLayout(new BoxLayout(manual, BoxLayout.Y_AXIS));
@@ -116,17 +148,25 @@ public class JavaConverter extends JFrame {
         ));
         manual.setBackground(Color.WHITE);
 
+        // Make sure text is visible by setting proper foreground color and opaque background
         targetButton = createStyledButton("Select Source File");
+        targetButton.setForeground(Color.black); // Ensure text is visible
+        targetButton.setOpaque(true); // Make button background visible
+
         pathTargetLabel = createPathLabel();
         manual.add(createFileSelectionRow(targetButton, pathTargetLabel));
         manual.add(Box.createVerticalStrut(15));
 
         destinationButton = createStyledButton("Select Destination Directory");
+        destinationButton.setForeground(Color.black); // Ensure text is visible
+        destinationButton.setOpaque(true); // Make button background visible
+
         pathDestinationLabel = createPathLabel();
         manual.add(createFileSelectionRow(destinationButton, pathDestinationLabel));
 
         return manual;
     }
+
 
     private JPanel createFormatPanel() {
         JPanel panel = new JPanel();
@@ -180,11 +220,19 @@ public class JavaConverter extends JFrame {
         // Add listener to handle radio button enabling/disabling
         customFormatField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
-            public void insertUpdate(DocumentEvent e) { updateRadioButtons(); }
+            public void insertUpdate(DocumentEvent e) {
+                updateRadioButtons();
+            }
+
             @Override
-            public void removeUpdate(DocumentEvent e) { updateRadioButtons(); }
+            public void removeUpdate(DocumentEvent e) {
+                updateRadioButtons();
+            }
+
             @Override
-            public void changedUpdate(DocumentEvent e) { updateRadioButtons(); }
+            public void changedUpdate(DocumentEvent e) {
+                updateRadioButtons();
+            }
 
             private void updateRadioButtons() {
                 boolean isEmpty = customFormatField.getText().trim().isEmpty();
@@ -194,7 +242,8 @@ public class JavaConverter extends JFrame {
 
         showFormatsButton = createStyledButton("Show All Formats");
         showFormatsButton.setBackground(new Color(100, 150, 200));
-        showFormatsButton.setForeground(Color.WHITE);
+        showFormatsButton.setForeground(Color.black);
+
 
         custom.add(customLabel, BorderLayout.WEST);
         custom.add(customFormatField, BorderLayout.CENTER);
@@ -203,9 +252,12 @@ public class JavaConverter extends JFrame {
         convertButton = new JButton("Convert File");
         convertButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
         convertButton.setBackground(new Color(70, 130, 180));
-        convertButton.setForeground(Color.WHITE);
+        convertButton.setForeground(Color.black);
         convertButton.setFocusPainted(false);
         convertButton.setBorder(new EmptyBorder(10, 30, 10, 30));
+
+        convertButton.setContentAreaFilled(true);
+        convertButton.setOpaque(true);
 
         JPanel btnWrap = new JPanel();
         btnWrap.setBackground(Color.WHITE);
@@ -220,34 +272,7 @@ public class JavaConverter extends JFrame {
         return panel;
     }
 
-    // Method to enable/disable and change opacity of radio buttons
-    private void setRadioButtonsEnabled(boolean enabled) {
-        // Make opacity 20% when disabled
-        float opacity = enabled ? 1.0f : 0.2f;
-
-        // Set all radio buttons enabled/disabled and change opacity
-        for (Component c : radioButtonPanel.getComponents()) {
-            if (c instanceof JRadioButton) {
-                JRadioButton rb = (JRadioButton) c;
-                rb.setEnabled(enabled);
-                rb.setForeground(new Color(
-                        rb.getForeground().getRed(),
-                        rb.getForeground().getGreen(),
-                        rb.getForeground().getBlue(),
-                        (int)(255 * opacity)
-                ));
-            }
-        }
-
-        // If radio buttons are disabled, clear selection
-        if (!enabled) {
-            formatButtonGroup.clearSelection();
-        } else if (formatButtonGroup.getSelection() == null) {
-            // If enabling and no selection, select PDF by default
-            pdfRadioButton.setSelected(true);
-        }
-    }
-
+    // --- UI HELPER METHODS ---
     private JButton createStyledButton(String text) {
         JButton b = new JButton(text);
         b.setFont(new Font("Segoe UI", Font.PLAIN, 13));
@@ -255,6 +280,9 @@ public class JavaConverter extends JFrame {
         b.setForeground(Color.WHITE);
         b.setFocusPainted(false);
         b.setBorder(new EmptyBorder(5, 15, 5, 15));
+        b.setContentAreaFilled(true);
+        b.setOpaque(true);
+
         return b;
     }
 
@@ -292,15 +320,35 @@ public class JavaConverter extends JFrame {
         return r;
     }
 
-    private void configureFrame() {
-        setTitle("Java File Converter");
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(600, 700); // Slightly taller to accommodate the new radio buttons
-        setLocationRelativeTo(null);
-        setContentPane(mainPanel);
-        setVisible(true);
+    // Method to enable/disable and change opacity of radio buttons
+    private void setRadioButtonsEnabled(boolean enabled) {
+        // Make opacity 20% when disabled
+        float opacity = enabled ? 1.0f : 0.2f;
+
+        // Set all radio buttons enabled/disabled and change opacity
+        for (Component c : radioButtonPanel.getComponents()) {
+            if (c instanceof JRadioButton) {
+                JRadioButton rb = (JRadioButton) c;
+                rb.setEnabled(enabled);
+                rb.setForeground(new Color(
+                        rb.getForeground().getRed(),
+                        rb.getForeground().getGreen(),
+                        rb.getForeground().getBlue(),
+                        (int) (255 * opacity)
+                ));
+            }
+        }
+
+        // If radio buttons are disabled, clear selection
+        if (!enabled) {
+            formatButtonGroup.clearSelection();
+        } else if (formatButtonGroup.getSelection() == null) {
+            // If enabling and no selection, select PDF by default
+            pdfRadioButton.setSelected(true);
+        }
     }
 
+    // --- DRAG AND DROP FUNCTIONALITY ---
     private void setupDragAndDrop() {
         new DropTarget(dropPanel, new DropTargetAdapter() {
             public void drop(DropTargetDropEvent dtde) {
@@ -313,17 +361,84 @@ public class JavaConverter extends JFrame {
                         selectedFile = files.get(0);
                         updatePathLabel(pathTargetLabel, selectedFile);
                         highlightDropPanel(true);
-                        new Timer(800, e->highlightDropPanel(false)).start();
+                        new Timer(800, e -> highlightDropPanel(false)).start();
                     }
-                } catch(Exception ex) {
+                } catch (Exception ex) {
                     JOptionPane.showMessageDialog(JavaConverter.this,
                             "Error processing dropped file: " + ex.getMessage(),
                             "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
-            public void dragEnter(DropTargetDragEvent e){ highlightDropPanel(true); }
-            public void dragExit(DropTargetEvent e){ highlightDropPanel(false); }
+
+            public void dragEnter(DropTargetDragEvent e) {
+                highlightDropPanel(true);
+            }
+
+            public void dragExit(DropTargetEvent e) {
+                highlightDropPanel(false);
+            }
         });
+    }
+
+    private void highlightDropPanel(boolean hl) {
+        dropPanel.setBorder(BorderFactory.createCompoundBorder(
+                new LineBorder(hl ? new Color(100, 200, 100) : new Color(200, 200, 200), 2),
+                new EmptyBorder(40, 20, 40, 20)
+        ));
+    }
+
+    // --- FILE SELECTION FUNCTIONALITY ---
+    // Helper that sets native L&F on the chooser only while ensuring Unicode support
+    private JFileChooser createNativeChooser(int dialogType, String title) {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception ignored) {
+        }
+        JFileChooser chooser = new JFileChooser();
+        SwingUtilities.updateComponentTreeUI(chooser);
+        chooser.setDialogType(dialogType);
+        chooser.setDialogTitle(title);
+
+        // Ensure proper font for Arabic filenames in the file chooser
+        updateComponentTreeFonts(chooser);
+
+        return chooser;
+    }
+
+    // Set appropriate fonts for components to support Arabic text
+    private void updateComponentTreeFonts(Container container) {
+        // Use Tahoma which has good Arabic support and is available on most systems
+        Font arabicFont = new Font("Tahoma", Font.PLAIN, 12);
+
+        for (Component comp : container.getComponents()) {
+            if (comp instanceof JComponent) {
+                comp.setFont(arabicFont);
+            }
+            if (comp instanceof Container) {
+                updateComponentTreeFonts((Container) comp);
+            }
+        }
+    }
+
+    private void selectSourceFile() {
+        JFileChooser chooser = createNativeChooser(JFileChooser.OPEN_DIALOG, "Select Source File");
+        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            selectedFile = chooser.getSelectedFile();
+            updatePathLabel(pathTargetLabel, selectedFile);
+        }
+    }
+
+    private void selectDestinationFile() {
+        JFileChooser chooser = createNativeChooser(JFileChooser.OPEN_DIALOG, "Choose Destination Directory");
+
+        // Set file selection mode to directories only
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setAcceptAllFileFilterUsed(false);
+
+        if (chooser.showDialog(this, "Select Directory") == JFileChooser.APPROVE_OPTION) {
+            destinationFile = chooser.getSelectedFile();
+            updatePathLabel(pathDestinationLabel, destinationFile);
+        }
     }
 
     private void updatePathLabel(JLabel label, File file) {
@@ -372,114 +487,50 @@ public class JavaConverter extends JFrame {
         }
     }
 
-    private void highlightDropPanel(boolean hl) {
-        dropPanel.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(hl ? new Color(100, 200, 100) : new Color(200, 200, 200), 2),
-                new EmptyBorder(40, 20, 40, 20)
-        ));
-    }
-
-    private void setupListeners() {
-        targetButton.addActionListener(e->selectSourceFile());
-        destinationButton.addActionListener(e->selectDestinationFile());
-        showFormatsButton.addActionListener(e->showAllFormats());
-        convertButton.addActionListener(e->convertFile());
-    }
-
-    // Helper that sets native L&F on the chooser only while ensuring Unicode support
-    private JFileChooser createNativeChooser(int dialogType, String title) {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch(Exception ignored){}
-        JFileChooser chooser = new JFileChooser();
-        SwingUtilities.updateComponentTreeUI(chooser);
-        chooser.setDialogType(dialogType);
-        chooser.setDialogTitle(title);
-
-        // Ensure proper font for Arabic filenames in the file chooser
-        updateComponentTreeFonts(chooser);
-
-        return chooser;
-    }
-
-    // Set appropriate fonts for components to support Arabic text
-    private void updateComponentTreeFonts(Container container) {
-        // Use Tahoma which has good Arabic support and is available on most systems
-        Font arabicFont = new Font("Tahoma", Font.PLAIN, 12);
-
-        for (Component comp : container.getComponents()) {
-            if (comp instanceof JComponent) {
-                comp.setFont(arabicFont);
-            }
-            if (comp instanceof Container) {
-                updateComponentTreeFonts((Container) comp);
-            }
-        }
-    }
-
-    private void selectSourceFile() {
-        JFileChooser chooser = createNativeChooser(JFileChooser.OPEN_DIALOG, "Select Source File");
-        if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            selectedFile = chooser.getSelectedFile();
-            updatePathLabel(pathTargetLabel, selectedFile);
-        }
-    }
-
-    private void selectDestinationFile() {
-        JFileChooser chooser = createNativeChooser(JFileChooser.OPEN_DIALOG, "Choose Destination Directory");
-
-        // Set file selection mode to directories only
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setAcceptAllFileFilterUsed(false);
-
-        if (chooser.showDialog(this, "Select Directory") == JFileChooser.APPROVE_OPTION) {
-            destinationFile = chooser.getSelectedFile();
-            updatePathLabel(pathDestinationLabel, destinationFile);
-        }
-    }
-
+    // --- FORMAT SELECTION FUNCTIONALITY ---
     private String getSelectedFormat() {
         String c = customFormatField.getText().trim().toLowerCase();
         if (!c.isEmpty()) return c;
-        if (pdfRadioButton.isSelected())  return "pdf";
+        if (pdfRadioButton.isSelected()) return "pdf";
         if (docxRadioButton.isSelected()) return "docx";
-        if (txtRadioButton.isSelected())  return "txt";
-        if (jpgRadioButton.isSelected())  return "jpg";
-        if (mp3RadioButton.isSelected())  return "mp3";
-        if (mp4RadioButton.isSelected())  return "mp4";
+        if (txtRadioButton.isSelected()) return "txt";
+        if (jpgRadioButton.isSelected()) return "jpg";
+        if (mp3RadioButton.isSelected()) return "mp3";
+        if (mp4RadioButton.isSelected()) return "mp4";
         return "";
     }
 
     private void showAllFormats() {
         JTextArea area = new JTextArea(
-                "Document Formats:\n" +
-                        "pdf, doc, docx, odt, fodt, rtf, txt, xml\n\n" +
-
-                        "E‑book Formats:\n" +
-                        "epub, fb2\n\n" +
-
+                "# Document Formats:\n" +
+                        "\tpdf, doc, docx, odt, fodt, rtf, txt, xml, latex, bibtex, \n\tbiblatex, " +
+                        "commonmark, creole, djot, docbook, dokuwiki, haddock, jats, \n\tjira, " +
+                        "man, mdoc, muse, opml, org, pod, rst, markdown, asciidoc, \n\tcontext, " +
+                        "texinfo, textile, tikiwiki, twiki, typst, vimwiki, tei, t2t, \n\t" +
+                        "icml, markua, xwiki, zimwiki\n\n" +
+                        "# Image Formats:\n" +
+                        "\tjpg, jpeg, png, bmp, gif, tiff, webp, heic, avif\n\n" +
+                        "# Audio Formats:\n" +
+                        "\tmp3, wav, ogg, flac, aac, m4a, wma, alac, opus, amr, aiff\n\n" +
+                        "# Video Formats:\n" +
+                        "\tmp4, mkv, avi, mov, flv, wmv, webm, mpeg, 3gp, ts, m4v\n\n" +
+                        "# E-book Formats:\n" +
+                        "\tepub, fb2\n\n" +
                         "Spreadsheet Formats:\n" +
-                        "xls, xlsx, ods, csv\n\n" +
-
-                        "Image Formats:\n" +
-                        "jpg, jpeg, png, bmp, gif, tiff, webp, heic, avif\n\n" +
-
-                        "Audio Formats:\n" +
-                        "mp3, wav, ogg, flac, aac, m4a, wma, alac, opus, amr, aiff\n\n" +
-
-                        "Video Formats:\n" +
-                        "mp4, mkv, avi, mov, flv, wmv, webm, mpeg, 3gp, ts, m4v\n\n" +
-
-                        "Other Formats:\n" +
-                        "json, html, latex, markdown"
+                        "\txls, xlsx, ods, csv, tsv\n\n" +
+                        "# Other Formats:\n" +
+                        "\tjson, html, ipynb, native, csljson, ris, endnotexml, " +
+                        "gfm, opendocument, \n\tplain, pptx, slideous, slidy, " +
+                        "dzslides, revealjs, s5, beamer"
         );
         area.setEditable(false);
         area.setFont(new Font("Monospaced", Font.PLAIN, 12));
         JScrollPane sp = new JScrollPane(area);
-        sp.setPreferredSize(new Dimension(500, 400));
+        sp.setPreferredSize(new Dimension(570, 450));
         JOptionPane.showMessageDialog(this, sp, "Supported Formats", JOptionPane.INFORMATION_MESSAGE);
     }
 
+    // --- FILE CONVERSION FUNCTIONALITY ---
     private void convertFile() {
         if (selectedFile == null) {
             JOptionPane.showMessageDialog(this, "Please select a source file first.",
@@ -503,25 +554,25 @@ public class JavaConverter extends JFrame {
             return;
         }
 
-        // Get source file path
-        String inputPath = selectedFile.getAbsolutePath();
+        // Get source file path as Path object
+        Path inputPath = selectedFile.toPath();
 
         // Determine output file path
-        String outputPath;
+        Path outputPath;
         if (destinationFile == null) {
             // If destination not selected, create default destination in same directory as source
             String srcPath = selectedFile.getAbsolutePath();
             int dotIndex = srcPath.lastIndexOf('.');
             String basePath = dotIndex > 0 ? srcPath.substring(0, dotIndex) : srcPath;
-            outputPath = basePath + "_converted." + format;
-            outputFile = new File(outputPath);
+            outputPath = Paths.get(basePath + "." + format);
+            outputFile = outputPath.toFile();
         } else {
             // If destination directory is selected, create output file in that directory
             String fileName = selectedFile.getName();
             int dotIndex = fileName.lastIndexOf('.');
             String baseName = dotIndex > 0 ? fileName.substring(0, dotIndex) : fileName;
-            outputFile = new File(destinationFile, baseName + "_converted." + format);
-            outputPath = outputFile.getAbsolutePath();
+            outputPath = Paths.get(destinationFile.getAbsolutePath(), baseName + "." + format);
+            outputFile = outputPath.toFile();
         }
 
         // Update the destination label
@@ -535,7 +586,7 @@ public class JavaConverter extends JFrame {
         new SwingWorker<Boolean, Void>() {
             @Override
             protected Boolean doInBackground() {
-                // Call the FileConverter to do the actual conversion
+                // Call the FileConverter to do the actual conversion with the correct method name
                 return ConvertFile.converFileThread(inputPath, outputPath);
             }
 
@@ -589,6 +640,7 @@ public class JavaConverter extends JFrame {
         return dialog;
     }
 
+    // --- MAIN METHOD ---
     public static void main(String[] args) {
         // Set default look and feel to system
         try {
@@ -601,5 +653,24 @@ public class JavaConverter extends JFrame {
         }
 
         SwingUtilities.invokeLater(JavaConverter::new);
+    }
+
+    {
+// GUI initializer generated by IntelliJ IDEA GUI Designer
+// >>> IMPORTANT!! <<<
+// DO NOT EDIT OR ADD ANY CODE HERE!
+        $$$setupUI$$$();
+    }
+
+    /**
+     * Method generated by IntelliJ IDEA GUI Designer
+     * >>> IMPORTANT!! <<<
+     * DO NOT edit this method OR call it in your code!
+     *
+     * @noinspection ALL
+     */
+    private void $$$setupUI$$$() {
+        final JPanel panel1 = new JPanel();
+        panel1.setLayout(new com.intellij.uiDesigner.core.GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
     }
 }

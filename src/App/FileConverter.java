@@ -1,26 +1,36 @@
 package App;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
-import static App.ConvertFile.convertFile;
+
+import static App.ConvertFile.converFileThread;
+
 
 public class FileConverter {
 
     public static void main(String[] args) {
-        Scanner in = new Scanner(System.in);
+        try (Scanner in = new Scanner(System.in)){
 
-        System.out.println("Enter input with the path (C:\\Users\\faisa\\input.md)");
-        String input_file = in.nextLine();
 
-        System.out.println("Enter output with the path (C:\\Users\\faisa\\output.pdf)");
-        String output_file = in.nextLine();
+            System.out.println("Enter input with the path (C:\\Users\\faisa\\input.md)");
+            Path input_file = Paths.get(in.nextLine());
 
-        in.close();
+            System.out.println("Enter output with the path (C:\\Users\\faisa\\output.pdf)");
+            Path output_file = Paths.get(in.nextLine());
 
-        boolean success = convertFile(input_file, output_file);
-        if (success) {
-            System.out.println("Conversion completed successfully");
-        } else {
-            System.out.println("Conversion failed");
+            boolean success = converFileThread(input_file, output_file);
+            if (success) {
+                System.out.println("Conversion completed successfully");
+            } else {
+                System.out.println("Conversion failed");
+            }
+
+
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
         }
+
+
     }
 }
