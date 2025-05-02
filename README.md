@@ -1,6 +1,9 @@
 # 📁 Jafile
 
-Welcome to our project 🎉  
+Welcome to our project 🎉 
+
+![Jafile Screenshot](/logo.png)
+
 This project was developed using **Java** along with **Swing** to create a simple and user-friendly graphical interface.
 
 ---
@@ -48,7 +51,7 @@ To ensure proper file conversion across various formats, the application uses th
 
 ---
 
-## Installation
+## 📥 Installation
 
 *Follow these simple steps to set up the project:*
 
@@ -59,13 +62,13 @@ To ensure proper file conversion across various formats, the application uses th
     git clone https://github.com/Ahmed-Alsefari/Jafile-Java-File-Converter-.git
     ```
 
-3. **Open the project** using **IntelliJ IDEA** or any Java-supported IDE.
-
-4. **Make sure Java is installed**
+3. **Make sure Java is installed**
     ```bash
     java -version
     ```
     > Java 17 or higher is recommended.
+
+4. **Open the project** using **IntelliJ IDEA** or any Java-supported IDE.
 
 ---
 
