@@ -2,7 +2,7 @@
 
 Welcome to our project 🎉 
 
-<img src="logo.png" alt="Jafile Logo" width="100"/>
+<img src="logo.png" alt="Jafile Logo" width="300"/>
 
 This project was developed using **Java** along with **Swing** to create a simple and user-friendly graphical interface.
 
