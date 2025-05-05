@@ -60,7 +60,20 @@ public class ConvertFile {
         try {
             String command = "";
 
-            if (audioFormats.contains(input_extension) || audioFormats.contains(output_extension) ||
+            if (videoFormats.contains(input_extension) && audioFormats.contains(output_extension)) {
+                String audioCodec = "";
+                if (output_extension.equals("mp3")) {
+                    audioCodec = "-c:a libmp3lame -q:a 2";
+                } else if (output_extension.equals("aac")) {
+                    audioCodec = "-c:a aac -b:a 192k";
+                } else if (output_extension.equals("wav")) {
+                    audioCodec = "-c:a pcm_s16le";
+                } else {
+                    audioCodec = "-c:a copy";
+                }
+                command = String.format("%s -i \"%s\" -vn %s \"%s\"", ffmpeg_path, input_file, audioCodec, new_output_file);
+            }
+            else if (audioFormats.contains(input_extension) || audioFormats.contains(output_extension) ||
                     videoFormats.contains(input_extension) || videoFormats.contains(output_extension)) {
 
                 int threads = Math.max(1, Runtime.getRuntime().availableProcessors() / 2);

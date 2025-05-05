@@ -34,7 +34,7 @@ public class Database {
         }
     }
 
-    public static void add_file_history(FileHistory file_history) {
+    public static boolean add_file_history(FileHistory file_history) {
         lock.lock();
         String sql = "INSERT INTO " + table_name + " (file_name, file_path) VALUES (?, ?)";
         try (Connection connection = get_connection();
@@ -42,8 +42,10 @@ public class Database {
             stmt.setString(1, file_history.getFileName());
             stmt.setString(2, file_history.getFilePath());
             stmt.executeUpdate();
+            return true;
         } catch (SQLException e) {
             System.err.println("Failed to add file history: " + e.getMessage());
+            return false;
         } finally {
             lock.unlock();
         }

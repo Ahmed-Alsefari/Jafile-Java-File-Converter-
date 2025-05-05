@@ -5,7 +5,7 @@ import java.nio.file.Paths;
 import java.util.Set;
 
 public class Constants {
-    public static final Set<String> officeFormats = Set.of("pdf", "doc", "odt", "rtf", "epub", "fodt", "xml", "xls", "docx");
+    public static final Set<String> officeFormats = Set.of("pdf", "doc", "odt", "rtf", "epub", "fodt", "xml", "xls");
     public static final Set<String> imageFormats = Set.of("jpg", "jpeg", "png", "bmp", "gif", "tiff", "webp", "heic", "avif");
     public static final Set<String> audioFormats = Set.of("mp3", "wav", "ogg", "flac", "aac", "m4a", "wma", "alac", "opus", "amr", "aiff");
     public static final Set<String> videoFormats = Set.of("mp4", "mkv", "avi", "mov", "flv", "wmv", "webm", "mpeg", "3gp", "ts", "m4v");
