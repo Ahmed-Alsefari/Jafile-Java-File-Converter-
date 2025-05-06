@@ -6,9 +6,11 @@ Welcome to our project 🎉
 
 This project was developed using **Java** along with **Swing** to create a simple and user-friendly graphical interface.
 
+
 ---
 
-## 📝 Description
+
+# 📝 Description
 The **Jafile(Java File Converter)** is a versatile tool designed to easily transform files between a wide range of formats.  
 It provides a user-friendly interface that supports the conversion of:
 
@@ -33,9 +35,11 @@ It provides a user-friendly interface that supports the conversion of:
 - ⚡ **Other Formats:**  
   `json`, `html`, `latex`, `markdown`
 
+
 ---
 
-## 🛠 Requirements
+
+# 🛠 Requirements
 
 To ensure proper file conversion across various formats, the application uses the following essential tools:
 
@@ -46,17 +50,21 @@ To ensure proper file conversion across various formats, the application uses th
 -  🐳 **Docker & Docker Compose** – Required to run the PostgreSQL database and manage pgAdmin easily via containers. [Get Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
 
-> ⚠️ **Important Note**  
-> All of the above tools are already included in a prepackaged **compressed file** located in the [Download Section](#📥-installation) below.  
+
+ ⚠️ **Important Note**  
+> All of the above tools are already included in a prepackaged **compressed file** located in the (📥-installation) below.  
 > If for any reason the tools are missing or fail to work, you can manually install them using the links provided above.
 > You’ll need to manually install **Docker & Docker Compose** on your system to enable database support.  
 > 👉 [Get Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
+
 ---
 
-## 📥 Installation
+
+# 📥 Installation
 
 *Follow these simple steps to set up the project:*
+
 
 ---
 
@@ -82,7 +90,7 @@ If you don't want to use Git:
 
 ### 🧰 4. Extract Tools  
 - Inside the project directory, you will find a compressed file named `Jafile.zip` !!! You’ll need to manually install **Docker & Docker Compose** !!!.
-- Extract it and place the extracted tools folder inside the root project directory.
+- Extract it and place the extracted "tools" and "jdk1.8.0_202" folders inside the root project directory.
 - These tools are necessary for the app to function correctly.
 
 ---
@@ -115,9 +123,11 @@ docker-compose up
 - Right-click the file and choose **Run** (or run it from the terminal if you're using another IDE).
 - This will launch the main graphical interface of the application.
 
+
 ---
 
-## 👥 Team Members
+
+# 👥 Team Members
 
 | Name               |
 |--------------------|
