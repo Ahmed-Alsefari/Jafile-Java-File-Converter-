@@ -10,7 +10,8 @@ import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
-
+import java.util.List;
+import java.util.ArrayList;
 import static App_Constants.Constants.*;
 import static Utils.Tool.*;
 
@@ -38,18 +39,52 @@ public class ConvertFile {
         return result.get();
     }
 
+
+// ahmed alharbi >>>>>>>>>>>>>
+    public static boolean convertMultipleFiles(List<Path> inputFiles, List<Path> outputFiles) {
+        List<Thread> threads = new ArrayList<>();
+
+        if (inputFiles.size() != outputFiles.size()) {
+            System.err.println("Input and output files count mismatch.");
+            return false;
+        }
+
+        for (int i = 0; i < inputFiles.size(); i++) {
+            Path inputFile = inputFiles.get(i);
+            Path outputFile = outputFiles.get(i);
+
+            Thread thread = new Thread(() -> {
+                convertFile(inputFile, outputFile);
+            });
+            threads.add(thread);
+            thread.start();
+        }
+
+        for (Thread thread : threads) {
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                System.err.println("Thread interrupted: " + e.getMessage());
+                return false;
+            }
+        }
+
+        return true;
+    }
+//  <<<<<<<<<<<<<<
+
     private static boolean convertFile(Path input_file, Path output_file) {
 
         String input_extension = getFileExtension(input_file).toLowerCase();
         String output_extension = getFileExtension(output_file).toLowerCase();
 
-        String file_name = output_file.getFileName().toString().replaceFirst("[.][^.]+$", "");
+
+        String file_name = input_file.getFileName().toString().replaceFirst("[.][^.]+$", "");
 
         Path output_path = output_file.getParent();
         Path temp = output_path.resolve(file_name + ".docx");
 
 
-        // add ( "_converted" ) to make it unique
         Path new_output_file = output_path.resolve(file_name + "_converted." + output_extension);
 
         boolean check = false;
@@ -72,8 +107,7 @@ public class ConvertFile {
                     audioCodec = "-c:a copy";
                 }
                 command = String.format("%s -i \"%s\" -vn %s \"%s\"", ffmpeg_path, input_file, audioCodec, new_output_file);
-            }
-            else if (audioFormats.contains(input_extension) || audioFormats.contains(output_extension) ||
+            } else if (audioFormats.contains(input_extension) || audioFormats.contains(output_extension) ||
                     videoFormats.contains(input_extension) || videoFormats.contains(output_extension)) {
 
                 int threads = Math.max(1, Runtime.getRuntime().availableProcessors() / 2);
@@ -119,7 +153,7 @@ public class ConvertFile {
             return true;
 
 
-        } catch ( Exception e) {
+        } catch (Exception e) {
 
             System.out.println("Error during conversion: " + e.getMessage());
             e.printStackTrace();
@@ -136,8 +170,5 @@ public class ConvertFile {
             lock.unlock();
 
         }
-
-
     }
 }
-

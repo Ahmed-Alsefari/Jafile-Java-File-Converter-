@@ -3,8 +3,6 @@ package com.jafile.tests;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-import App.ConvertFile;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;

@@ -54,11 +54,11 @@ public class FileHistory {
 
     @Override
     public String toString() {
-        return "FileHistory{" +
-                "id=" + id +
-                ", fileName='" + fileName + '\'' +
-                ", filePath='" + filePath + '\'' +
-                ", createdAt=" + createdAt +
-                '}';
+        return " FileHistory { " +
+                " id = " + id +
+                " , fileName = ' " + fileName + " ' " +
+                " , filePath = ' " + filePath + " ' " +
+                " , createdAt = " + createdAt +
+                " } \n";
     }
 }

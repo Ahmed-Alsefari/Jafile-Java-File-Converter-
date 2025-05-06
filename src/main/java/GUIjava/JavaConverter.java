@@ -1,7 +1,10 @@
 package GUIjava;
+
 import App.FileConverterServer;
+import DB.Database;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.border.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -14,10 +17,8 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 
 public class JavaConverter extends JFrame {
     // --- MAIN COMPONENTS AND FIELDS ---
@@ -27,12 +28,13 @@ public class JavaConverter extends JFrame {
     private File selectedFile;
     private File destinationFile;
     private File outputFile; // Actual output file
+    private JButton showHistoryButton, clearHistoryButton;
 
     private JRadioButton pdfRadioButton, docxRadioButton, txtRadioButton, jpgRadioButton, mp3RadioButton, mp4RadioButton;
     private JTextField customFormatField;
     private ButtonGroup formatButtonGroup;
     private JPanel radioButtonPanel;
-
+    private List<File> selectedFiles;
     ImageIcon logo = new ImageIcon("logo.png");
 
     // Set of valid formats for validation
@@ -78,7 +80,6 @@ public class JavaConverter extends JFrame {
         setIconImage(logo.getImage());
         setVisible(true);
 
-        // Set layout for main components
         JPanel centerPanel = new JPanel(new BorderLayout(10, 10));
         centerPanel.setBackground(mainPanel.getBackground());
 
@@ -111,6 +112,11 @@ public class JavaConverter extends JFrame {
         destinationButton.addActionListener(e -> selectDestinationFile());
         showFormatsButton.addActionListener(e -> showAllFormats());
         convertButton.addActionListener(e -> convertFile());
+
+        // Add listeners for the history buttons
+        showHistoryButton.addActionListener(e -> showConversionHistory());
+        clearHistoryButton.addActionListener(e -> clearConversionHistory());
+
     }
 
     // --- UI CREATION METHODS ---
@@ -126,22 +132,56 @@ public class JavaConverter extends JFrame {
     }
 
     private JPanel createDragDropPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
+        // Main panel with BorderLayout
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(new Color(200, 200, 200)), new EmptyBorder(40, 20, 40, 20)
+                new LineBorder(new Color(200, 200, 200)), new EmptyBorder(20, 20, 20, 20)
         ));
         panel.setBackground(new Color(250, 250, 250));
 
-        // Use html for better Arabic support
-        JLabel dl = new JLabel("<html><div style='text-align: center;'>Drag & Drop File Here</div></html>", SwingConstants.CENTER);
+        // Center label for drag and drop
+        JLabel dl = new JLabel("<html><div style='text-align: center;'>Drag & Drop Files Here</div></html>", SwingConstants.CENTER);
         dl.setFont(new Font("Segoe UI", Font.PLAIN, 18));
         dl.setForeground(new Color(150, 150, 150));
-        panel.add(dl, BorderLayout.CENTER);
 
-        // Make minimum height for the panel
+        // Create history buttons with distinctive appearance
+        showHistoryButton = new JButton("Show History");
+        showHistoryButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        showHistoryButton.setBackground(new Color(0, 0, 0));
+        showHistoryButton.setForeground(Color.BLACK);
+        showHistoryButton.setFocusPainted(false);
+        showHistoryButton.setBorder(BorderFactory.createRaisedBevelBorder());
+        showHistoryButton.setPreferredSize(new Dimension(120, 30));
+
+        clearHistoryButton = new JButton("Clear History");
+        clearHistoryButton.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        clearHistoryButton.setBackground(new Color(0, 0, 0));
+        clearHistoryButton.setForeground(Color.BLACK);
+        clearHistoryButton.setFocusPainted(false);
+        clearHistoryButton.setBorder(BorderFactory.createRaisedBevelBorder());
+        clearHistoryButton.setPreferredSize(new Dimension(120, 30));
+
+        // Create panel for the buttons using a GridLayout (2 rows, 1 column)
+        JPanel buttonsPanel = new JPanel(new GridLayout(2, 1, 0, 10));
+        buttonsPanel.setOpaque(false);  // Make it transparent
+        buttonsPanel.add(showHistoryButton);
+        buttonsPanel.add(clearHistoryButton);
+
+        // Right panel to hold the buttons
+        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        rightPanel.setOpaque(false);  // Make it transparent
+        rightPanel.add(buttonsPanel);
+
+        // Add components to the main panel
+        panel.add(dl, BorderLayout.CENTER);
+        panel.add(rightPanel, BorderLayout.EAST);
+
+        // Set minimum height
         panel.setPreferredSize(new Dimension(0, 120));
+
         return panel;
     }
+
 
     // In the createManualSelectionPanel() method, ensure the buttons have visible text:
     private JPanel createManualSelectionPanel() {
@@ -361,11 +401,30 @@ public class JavaConverter extends JFrame {
                     @SuppressWarnings("unchecked")
                     List<File> files = (List<File>) dtde.getTransferable()
                             .getTransferData(DataFlavor.javaFileListFlavor);
+
                     if (!files.isEmpty()) {
+                        // Store all dropped files
+                        selectedFiles = new ArrayList<>(files);
+
+                        // Set the first file as the selectedFile for backward compatibility
                         selectedFile = files.get(0);
-                        updatePathLabel(pathTargetLabel, selectedFile);
+
+                        // Display the paths for all selected files
+                        StringBuilder filePaths = new StringBuilder();
+                        for (File file : selectedFiles) {
+                            filePaths.append(file.getAbsolutePath()).append("\n");
+                        }
+                        pathTargetLabel.setText("<html>" + filePaths.toString().replaceAll("\n", "<br>") + "</html>");
+
+                        // Highlight drop panel briefly
                         highlightDropPanel(true);
                         new Timer(800, e -> highlightDropPanel(false)).start();
+
+                        // Show the number of selected files (optional - remove if not needed)
+                        if (selectedFiles.size() > 1) {
+                            JOptionPane.showMessageDialog(JavaConverter.this,
+                                    "Selected files: " + selectedFiles.size());
+                        }
                     }
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(JavaConverter.this,
@@ -385,10 +444,20 @@ public class JavaConverter extends JFrame {
     }
 
     private void highlightDropPanel(boolean hl) {
+        // Store the current border's insets
+        Border currentBorder = dropPanel.getBorder();
+        Insets insets = currentBorder instanceof CompoundBorder ?
+                ((CompoundBorder) currentBorder).getOutsideBorder().getBorderInsets(dropPanel) :
+                new Insets(2, 2, 2, 2);
+
+        // Create a new border with the same insets but different color
         dropPanel.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(hl ? new Color(100, 200, 100) : new Color(200, 200, 200), 2),
-                new EmptyBorder(40, 20, 40, 20)
+                new LineBorder(hl ? new Color(100, 200, 100) : new Color(200, 200, 200), insets.top),
+                new EmptyBorder(20, 20, 20, 20)
         ));
+
+        // Make sure to repaint the panel
+        dropPanel.repaint();
     }
 
     // --- FILE SELECTION FUNCTIONALITY ---
@@ -425,18 +494,30 @@ public class JavaConverter extends JFrame {
     }
 
     private void selectSourceFile() {
-        JFileChooser chooser = createNativeChooser(JFileChooser.OPEN_DIALOG, "Select Source File");
+        JFileChooser chooser = createNativeChooser(JFileChooser.OPEN_DIALOG, "Select Source Files");
+        chooser.setMultiSelectionEnabled(true);  // Enable multiple file selection
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            selectedFile = chooser.getSelectedFile();
-            updatePathLabel(pathTargetLabel, selectedFile);
+            File[] selectedFilesArray = chooser.getSelectedFiles();  // Get selected files
+            if (selectedFilesArray.length > 0) {
+                selectedFiles = Arrays.asList(selectedFilesArray);  // Store the selected files
+
+                // Display the paths for all selected files
+                StringBuilder filePaths = new StringBuilder();
+                for (File file : selectedFiles) {
+                    filePaths.append(file.getAbsolutePath()).append("\n");
+                }
+                pathTargetLabel.setText("<html>" + filePaths.toString().replaceAll("\n", "<br>") + "</html>");
+
+                // Show the number of selected files
+                JOptionPane.showMessageDialog(this, "Selected files: " + selectedFiles.size());
+            }
         }
     }
 
     private void selectDestinationFile() {
         JFileChooser chooser = createNativeChooser(JFileChooser.OPEN_DIALOG, "Choose Destination Directory");
 
-        // Set file selection mode to directories only
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);  // Only allow selecting directories
         chooser.setAcceptAllFileFilterUsed(false);
 
         if (chooser.showDialog(this, "Select Directory") == JFileChooser.APPROVE_OPTION) {
@@ -485,6 +566,7 @@ public class JavaConverter extends JFrame {
             if (!fontFound) {
                 label.setFont(new Font("Tahoma", Font.PLAIN, 12));
             }
+
         } catch (Exception e) {
             label.setText("Error displaying path");
             e.printStackTrace();
@@ -534,10 +616,10 @@ public class JavaConverter extends JFrame {
         JOptionPane.showMessageDialog(this, sp, "Supported Formats", JOptionPane.INFORMATION_MESSAGE);
     }
 
-    // --- FILE CONVERSION FUNCTIONALITY ---
+
     private void convertFile() {
-        if (selectedFile == null) {
-            JOptionPane.showMessageDialog(this, "Please select a source file first.",
+        if (selectedFiles == null || selectedFiles.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please select one or more source files first.",
                     "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -549,7 +631,7 @@ public class JavaConverter extends JFrame {
             return;
         }
 
-        // Check if the format is valid
+
         if (!validFormats.contains(format.toLowerCase())) {
             JOptionPane.showMessageDialog(this,
                     "'" + format + "' is not a supported format.\n" +
@@ -558,77 +640,72 @@ public class JavaConverter extends JFrame {
             return;
         }
 
-        // Get source file path as Path object
-        Path inputPath = selectedFile.toPath();
 
-        // Determine output file path
-        Path outputPath;
-        if (destinationFile == null) {
-            // If destination not selected, create default destination in same directory as source
-            String srcPath = selectedFile.getAbsolutePath();
-            int dotIndex = srcPath.lastIndexOf('.');
-            String basePath = dotIndex > 0 ? srcPath.substring(0, dotIndex) : srcPath;
-            outputPath = Paths.get(basePath + "." + format);
-            outputFile = outputPath.toFile();
-        } else {
-            // If destination directory is selected, create output file in that directory
-            String fileName = selectedFile.getName();
-            int dotIndex = fileName.lastIndexOf('.');
-            String baseName = dotIndex > 0 ? fileName.substring(0, dotIndex) : fileName;
-            outputPath = Paths.get(destinationFile.getAbsolutePath(), baseName + "." + format);
-            outputFile = outputPath.toFile();
-        }
-
-        // Update the destination label
-        updatePathLabel(pathDestinationLabel, outputFile);
-
-        // Show progress dialog
         JDialog progressDialog = createProgressDialog();
         progressDialog.setVisible(true);
 
-        // Run the conversion in a background thread
-        new SwingWorker<Boolean, Void>() {
-            @Override
-            protected Boolean doInBackground() {
-                try (
-                        Socket socket = new Socket("localhost", 9000);
-                        ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-                        ObjectInputStream in = new ObjectInputStream(socket.getInputStream())
-                ) {
-                    out.writeObject(inputPath.toString());
-                    out.writeObject(outputPath.toString());
 
-                    return (Boolean) in.readObject();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    return false;
+        final List<String> convertedPaths = new ArrayList<>();
+
+// ahmed alharbi >>>>>>>>>>>>>
+        new SwingWorker<Void, Void>() {
+            @Override
+            protected Void doInBackground() throws Exception {
+
+                for (File file : selectedFiles) {
+                    Path inputPath = file.toPath();
+
+                    Path outputPath = destinationFile == null ?
+                            Paths.get(inputPath.toString() + "." + format) :
+                            Paths.get(destinationFile.getAbsolutePath(), file.getName() + "." + format);
+
+
+                    try (Socket socket = new Socket("localhost", 9000);
+                         ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+                         ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
+
+                        out.writeObject(inputPath.toString());
+                        out.writeObject(outputPath.toString());
+
+                        boolean result = (Boolean) in.readObject();
+                        if (!result) {
+
+                            return null;
+                        } else {
+
+                            convertedPaths.add(outputPath.toString());
+                        }
+                    }
                 }
+                return null;
             }
 
             @Override
             protected void done() {
                 progressDialog.dispose();
                 try {
-                    boolean success = get();
-                    if (success) {
-                        JOptionPane.showMessageDialog(JavaConverter.this,
-                                "Conversion completed successfully!\n" +
-                                        "Output file: " + outputFile.getAbsolutePath(),
-                                "Success", JOptionPane.INFORMATION_MESSAGE);
-                    } else {
-                        JOptionPane.showMessageDialog(JavaConverter.this,
-                                "Conversion failed. Please check the console for details.",
-                                "Error", JOptionPane.ERROR_MESSAGE);
+                    get();
+
+                    StringBuilder pathsMessage = new StringBuilder("Converted files:\n");
+                    for (String path : convertedPaths) {
+                        pathsMessage.append(path).append("\n");
                     }
-                } catch (Exception ex) {
+
                     JOptionPane.showMessageDialog(JavaConverter.this,
-                            "Error during conversion: " + ex.getMessage(),
+                            pathsMessage.toString(),
+                            "Conversion Completed",
+                            JOptionPane.INFORMATION_MESSAGE);
+
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(JavaConverter.this,
+                            "Error during conversion: " + e.getMessage(),
                             "Error", JOptionPane.ERROR_MESSAGE);
-                    ex.printStackTrace();
                 }
             }
         }.execute();
     }
+// <<<<<<<<<<<<<<<<<<<
+
 
     private JDialog createProgressDialog() {
         JDialog dialog = new JDialog(this, "Converting...", true);
@@ -649,16 +726,30 @@ public class JavaConverter extends JFrame {
         dialog.setLocationRelativeTo(this);
         dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 
-        // Make the dialog modal but allow the worker thread to close it
         dialog.setModal(false);
 
         return dialog;
     }
 
+    private void showConversionHistory() {
+        // TODO: Implement show history functionality
+        JOptionPane.showMessageDialog(this, "Show Conversion History \n" + Database.get_all_file_history() ,
+                "Show History", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void clearConversionHistory() {
+        // TODO: Implement clear history functionality
+        JOptionPane.showMessageDialog(this, "Clear Conversion History \n",
+                "Clear History", JOptionPane.INFORMATION_MESSAGE);
+        Database.delete_all_history();
+    }
+
+
+
     // --- MAIN METHOD ---
     public static void main(String[] args) {
         // Set default look and feel to system
-         new Thread(() -> {
+        new Thread(() -> {
             new App.FileConverterServer().main(args);
         }).start();
         try {
