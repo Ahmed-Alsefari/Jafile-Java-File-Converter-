@@ -39,15 +39,21 @@ It provides a user-friendly interface that supports the conversion of:
 
 To ensure proper file conversion across various formats, the application uses the following essential tools:
 
--  🛠 **Pandoc** - For document and markdown file conversions.
--  🛠 **LibreOffice** - For advanced document, spreadsheet, and presentation conversions.
--  🛠 **ImageMagick** - For image format conversions and optimizations.
--  🛠 **FFmpeg** - For audio and video file format conversions.
+-  📄 **Pandoc** - For document and markdown file conversions. [Get Pandoc](https://github.com/jgm/pandoc/releases/tag/3.6.4)
+-  🖇️ **LibreOffice** - For advanced document, spreadsheet, and presentation conversions. [Get libreoffice](https://www.libreoffice.org/download/download-libreoffice/)
+-  🖼️ **ImageMagick** - For image format conversions and optimizations. [Get imagemagick](https://imagemagick.org/script/download.php)
+-  🎞️ **FFmpeg** - For audio and video file format conversions. [Get ffmpeg](https://www.ffmpeg.org/download.html)
+-  🐳 Docker & Docker Compose – Required to run the PostgreSQL database and manage pgAdmin easily via containers. [Get Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
+Get Docker Desktop (includes Docker Compose
 ### 📦 Included Tools
 
  All required tools are already packaged inside the project under the `tools/` directory.  
  When you run the application for the first time, the program automatically detects and configures these tools without requiring any additional installation or setup.
+
+> ⚠️ **Important Note**  
+> You’ll need to manually install **Docker & Docker Compose** on your system to enable database support.  
+> 👉 [Get Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
 ---
 
@@ -69,6 +75,10 @@ To ensure proper file conversion across various formats, the application uses th
     > Java 17 or higher is recommended.
 
 4. **Open the project** using **IntelliJ IDEA** or any Java-supported IDE.
+
+5. Run the GUI
+
+Locate the JavaConverter class and run it to launch the main graphical interface of the application.
 
 ---
 
