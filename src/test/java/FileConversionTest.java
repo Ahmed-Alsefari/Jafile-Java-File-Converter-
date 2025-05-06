@@ -1,5 +1,6 @@
 package com.jafile.tests;
 
+import App.ConvertFile;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 

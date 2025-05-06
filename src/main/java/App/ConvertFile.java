@@ -119,7 +119,7 @@ public class ConvertFile {
 
 
             } else if (officeFormats.contains(input_extension) || officeFormats.contains(output_extension)) {
-                if (!officeFormats.contains(input_extension)) {
+                if (!officeFormats.contains(input_extension)&&(!input_extension.equals("docx"))) {
 
                     command(String.format("\"%s\" -s \"%s\" -o \"%s\"", pandoc_path, input_file.toString(), temp.toString()));
                     check = true;
