@@ -121,10 +121,52 @@ docker-compose up
 - Right-click the file and choose **Run** (or run it from the terminal if you're using another IDE).
 - This will launch the main graphical interface of the application.
 - Or you can directly open [Jafile-Java-File-Converter-.jar]
-
+<img src="images/Screenshot_2.png" alt="Select Input File" width="500"/>
 
 ---
 
+# 📚 How to Use
+
+
+### 📂 1. Select Input File
+Click the "Select Source File" button to choose the file you want to convert, or you can "Drag & Drop Files".
+You can select multiple files at once.
+<img src="images/Screenshot_4.png" alt="Select Input File" width="500"/>
+
+---
+
+### 💾 2. Set Output Directory (Optional)
+You can optionally choose a destination folder to save the converted file by clicking "Select Destination Directory". 
+If not specified, the output will be saved in the default directory.
+<img src="images/Screenshot_5.png" alt="Set Output Directory" width="500"/>
+
+---
+
+### 🔄 3. Choose Output Format
+Pick a format from the list (.pdf, .docx, .txt, .jpg, .mp3, .mp4), or use the Custom Format field.
+You can view all formats by clicking "Show All Formats."
+<img src="images/Screenshot_6.png" alt="Choose Output Format" width="500"/>
+
+---
+
+### ▶️ 4. Start Conversion
+Click the "Convert File" button. The application will begin the conversion using the appropriate internal tool (Pandoc, LibreOffice, etc.).
+<img src="images/Screenshot_2.png" alt="Start Conversion" width="500"/>
+
+---
+
+### ✅ 5. View Result
+Once the conversion completes, a success message will appear.
+<img src="images/Screenshot_7.png" alt="View Result" width="500"/>
+
+---
+
+### 🧾 6. View & Manage History
+You can click "Show History" to view a list of previously converted files.
+To clear this list, click "Clear History" This will remove all stored conversion records
+<img src="images/Screenshot_8.png" alt="View and Manage History" width="500"/>
+
+---
 
 # 👥 Team Members
 
