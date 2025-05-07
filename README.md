@@ -52,7 +52,7 @@ To ensure proper file conversion across various formats, the application uses th
 
 
  ⚠️ **Important Note**  
-> All of the above tools are already included in a prepackaged **compressed file** located in the (📥-installation) below.  
+> All of the above tools are already included in a prepackaged **compressed file** located in the [📥-installation🧰 3. Extract Tools](#-3-extract-tools) below.  
 > If for any reason the tools are missing or fail to work, you can manually install them using the links provided above.
 > You’ll need to manually install **Docker & Docker Compose** on your system to enable database support.  
 > 👉 [Get Docker Desktop](https://www.docker.com/products/docker-desktop/)
@@ -79,23 +79,21 @@ Use Git to clone the repository:
 git clone https://github.com/Ahmed-Alsefari/Jafile-Java-File-Converter-.git
 ```
 
----
 
-### 📦 3. Alternative Method (Without Git)  
+### 📦 2.1 Alternative Method (Without Git)  
 If you don't want to use Git:
 
 - Download the project files directly from [this MEGA link](https://mega.nz/folder/IXcClLjZ#irj2clmDx78-nlimcoRH8g) [Jafile-Java-File-Converter-.zip].
   
 ---
 
-### 🧰 4. Extract Tools  
-- Inside the project directory, you will find a compressed file named `Jafile.zip` !!! You’ll need to manually install **Docker & Docker Compose** !!!.
+### 🧰 3. Extract Tools  
+- Inside the [MEGA link](https://mega.nz/folder/IXcClLjZ#irj2clmDx78-nlimcoRH8g), you will find a compressed file named `Jafile.zip` !!! You’ll need to manually install **Docker & Docker Compose** !!!.
 - Extract it and place the extracted "tools" and "jdk1.8.0_202" folders inside the root project directory.
-- These tools are necessary for the app to function correctly.
 
 ---
 
-### ☕ 5. Make Sure Java is Installed  
+### ☕ 4. Make Sure Java is Installed  
 Check if Java is installed using the following command:
 ```bash
 java -version
@@ -104,12 +102,12 @@ java -version
 
 ---
 
-### 🛠️ 6. Open the Project  
+### 🛠️ 5. Open the Project  
 - Open the project folder using **IntelliJ IDEA** or any Java-supported IDE.
 
 ---
 
-### 🐳 7. Run the Database  
+### 🐳 6. Run the Database  
 > ⚠️ **Important Note:**
 > after install **Docker & Docker Compose** 
 > run the following command inside the **IntelliJ IDEA** or any Java-supported IDE terminal:
@@ -118,10 +116,11 @@ docker-compose up
 ```
 ---
 
-### 🚀 8. Run the GUI  
+### 🚀 7. Run the GUI  
 - Locate the `JavaConverter` class inside the `src` folder.
 - Right-click the file and choose **Run** (or run it from the terminal if you're using another IDE).
 - This will launch the main graphical interface of the application.
+- Or you can directly open [Jafile-Java-File-Converter-.jar]
 
 
 ---
