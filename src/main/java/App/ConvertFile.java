@@ -73,7 +73,7 @@ public class ConvertFile {
     }
 //  <<<<<<<<<<<<<<
 
-    private static boolean convertFile(Path input_file, Path output_file) {
+        private static boolean convertFile(Path input_file, Path output_file) {
 
         String input_extension = getFileExtension(input_file).toLowerCase();
         String output_extension = getFileExtension(output_file).toLowerCase();
@@ -88,9 +88,6 @@ public class ConvertFile {
         Path new_output_file = output_path.resolve(file_name + "_converted." + output_extension);
 
         boolean check = false;
-
-        lock.lock();
-
 
         try {
             String command = "";
@@ -133,13 +130,13 @@ public class ConvertFile {
 
                 command = String.format("\"%s\" -s \"%s\" -o \"%s\"", pandoc_path, input_file.toString(), new_output_file.toString());
             }
-
-
+            
             command(command);
             System.out.println("Conversion completed successfully");
 
+            lock.lock();
+            try {
                 Database.initialize_database();
-
 
                 String file_Name = new_output_file.getFileName().toString();
                 String file_path = new_output_file.toAbsolutePath().toString();
@@ -149,16 +146,17 @@ public class ConvertFile {
                 Database.add_file_history(file_history);
 
                 System.out.println("File added to history: " + file_Name);
-
+            }finally {
+                lock.unlock();
+            }
             return true;
-
-
         } catch (Exception e) {
-
+            
             System.out.println("Error during conversion: " + e.getMessage());
             e.printStackTrace();
+            
             return false;
-
+            
         } finally {
             if (check) {
                 try {
@@ -167,8 +165,6 @@ public class ConvertFile {
                     System.err.println("Failed to delete temporary file: " + e.getMessage());
                 }
             }
-            lock.unlock();
-
         }
     }
 }
